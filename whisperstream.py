@@ -8,33 +8,43 @@ import numpy as np
 import openai
 import pyperclip
 
-def record(duration):
-    fs = 44100  # this is the frequency sampling; also: 4999, 64000
-    seconds = duration  # Duration of recording
-    myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
-    st.write("Grabando audio, por favor hable ahora...")
-    sd.wait()  # Wait until recording is finished
-    st.write("Grabación finalizada.")
-    write('output.mp3', fs, myrecording)  # Save as MP3 file
+from audio_recorder_streamlit import audio_recorder
 
-def transscribe():
-    torch.cuda.is_available()
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+working_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(working_dir)
 
-    model = whisper.load_model("base", device=DEVICE)
-    result_text = ""
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    with st.spinner("Transcribiendo el audio..."):
-        audio = whisper.load_audio('output.mp3')
-        audio = whisper.pad_or_trim(audio)
-        mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
-        _, probs = model.detect_language(mel)
-        st.write(f"Idioma detectado: {max(probs, key=probs.get)}")
+def transcribe(audio_file):
+    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    return transcript
 
-        options = whisper.DecodingOptions(language="en")
-        result = whisper.decode(model, mel, options)
-        result_text = result.text
+
+st.text("Whisper Transcription and Summarization")
+
+
+st.sidebar.title("Whisper Transcription and Summarization")
+
+# Explanation of the app
+st.sidebar.markdown("""
+        This is an app that allows you to. 
+        """)
+
+# tab record audio and upload audio
+
+audio_bytes = audio_recorder(pause_threshold=180)
+if audio_bytes:
+    st.audio(audio_bytes, format="audio/wav")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # save audio file to mp3
+    with open(f"audio_{timestamp}.mp3", "wb") as f:
+        f.write(audio_bytes)
+
+
+
+
 
     return result_text
 
