@@ -1,9 +1,5 @@
 streamlit
 sounddevice
-scipy
 whisper
-torch
-numpy
 openai
 pyperclip
-portaudio
