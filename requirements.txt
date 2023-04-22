@@ -2,4 +2,4 @@ streamlit
 sounddevice
 whisper
 openai
-pyperclip
+paperclip
