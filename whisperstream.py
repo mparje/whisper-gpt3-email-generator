@@ -6,8 +6,6 @@ import whisper
 import torch
 import numpy as np
 import openai
-from dotenv import load_dotenv
-load_dotenv()
 import pyperclip
 
 def record(duration):
