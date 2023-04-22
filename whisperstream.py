@@ -39,7 +39,7 @@ if audio_bytes:
     # save audio file to mp3
     with open(f"audio_{timestamp}.mp3", "wb") as f:
         f.write(audio_bytes)
-        return result_text
+  
 
 def generate_mail(text):
     openai.api_key = os.getenv("OPENAI_API_KEY")
