@@ -1,12 +1,10 @@
-import streamlit as st
+import paperclip
 import os
-import sounddevice as sd
-from scipy.io.wavfile import write
-import whisper
-import torch
-import numpy as np
+import sys
+import datetime
 import openai
-import pyperclip
+import streamlit as st
+
 
 from audio_recorder_streamlit import audio_recorder
 
