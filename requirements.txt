@@ -6,3 +6,4 @@ torch
 numpy
 openai
 pyperclip
+portaudio19-dev
