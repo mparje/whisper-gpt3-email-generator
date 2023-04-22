@@ -1,4 +1,4 @@
-import paperclip
+import pyperclip
 import os
 import sys
 import datetime
@@ -40,32 +40,30 @@ if audio_bytes:
     with open(f"audio_{timestamp}.mp3", "wb") as f:
         f.write(audio_bytes)
   
+    def generate_mail(text):
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=f"Write a kind email for this: I can not come to work today because im really sick\n\nHi there,\n\nI'm sorry for the short notice, but I won't be able to come in to work today. I'm really sick and need to rest. I'll be back to work tomorrow. Hope you all have a wonderful day.\n\nThanks,\n\n[Your Name]\n\n\nWrite a kind email for this: {text}",
+            temperature=0.7,
+            max_tokens=500,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+        return response.choices[0].text
 
-def generate_mail(text):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    response = openai.Completion.create(
-        model="text-davinci-002",
-        prompt=f"Write a kind email for this: I can not come to work today because im really sick\n\nHi there,\n\nI'm sorry for the short notice, but I won't be able to come in to work today. I'm really sick and need to rest. I'll be back to work tomorrow. Hope you all have a wonderful day.\n\nThanks,\n\n[Your Name]\n\n\nWrite a kind email for this: {text}",
-        temperature=0.7,
-        max_tokens=500,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
-    return response.choices[0].text
+    def main():
+        st.title("Transcripción de audio y generación de correo electrónico")
+        duration = st.slider("Duración de la grabación en segundos:", 1, 30, 8)
+        audio_bytes = audio_recorder(duration)
+        text = transcribe(audio_bytes)
+        st.write("Texto transcrito: ")
+        st.write(text)
+        email = generate_mail(text)
+        st.write("Correo electrónico generado: ")
+        st.write(email)
+        pyperclip.copy(email)
+        st.write("¡El correo electrónico se ha copiado en el portapapeles!")
 
-def main():
-    st.title("Transcripción de audio y generación de correo electrónico")
-    duration = st.slider("Duración de la grabación en segundos:", 1, 30, 8)
-    record(duration)
-    text = transscribe()
-    st.write("Texto transcrito: ")
-    st.write(text)
-    email = generate_mail(text)
-    st.write("Correo electrónico generado: ")
-    st.write(email)
-    st.write("¡El correo electrónico se ha copiado en el portapapeles!")
-    pyperclip.copy(email)
-
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
