@@ -3,3 +3,4 @@ sounddevice
 whisper
 openai
 paperclip
+audio_recorder_streamlit
