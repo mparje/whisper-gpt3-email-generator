@@ -1,4 +1,4 @@
-
+import streamlit as st
 import os
 import sounddevice as sd
 from scipy.io.wavfile import write
@@ -12,9 +12,9 @@ def record(duration):
     fs = 44100  # this is the frequency sampling; also: 4999, 64000
     seconds = duration  # Duration of recording
     myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
-    print("Starting: Speak now!")
+    st.write("Grabando audio, por favor hable ahora...")
     sd.wait()  # Wait until recording is finished
-    print("recording finished")
+    st.write("Grabación finalizada.")
     write('output.mp3', fs, myrecording)  # Save as MP3 file
 
 def transscribe():
@@ -22,25 +22,21 @@ def transscribe():
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     model = whisper.load_model("base", device=DEVICE)
-    print(
-        f"Model is {'multilingual' if model.is_multilingual else 'English-only'} "
-        f"and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters."
-    )
+    result_text = ""
 
-    audio = whisper.load_audio('output.mp3')
-    audio = whisper.pad_or_trim(audio)
-    mel = whisper.log_mel_spectrogram(audio).to(model.device)
+    with st.spinner("Transcribiendo el audio..."):
+        audio = whisper.load_audio('output.mp3')
+        audio = whisper.pad_or_trim(audio)
+        mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
-    _, probs = model.detect_language(mel)
-    print(f"Detected language: {max(probs, key=probs.get)}")
+        _, probs = model.detect_language(mel)
+        st.write(f"Idioma detectado: {max(probs, key=probs.get)}")
 
-    options = whisper.DecodingOptions(language="en",    )
-    result = whisper.decode(model, mel, options)
-    print(result.text)
+        options = whisper.DecodingOptions(language="en")
+        result = whisper.decode(model, mel, options)
+        result_text = result.text
 
-    result = model.transcribe('output.mp3')
-    print(result["text"])
-    return result["text"]
+    return result_text
 
 def generate_mail(text):
     openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -56,10 +52,16 @@ def generate_mail(text):
     return response.choices[0].text
 
 def main():
-    record(8) # in seconds
+    st.title("Transcripción de audio y generación de correo electrónico")
+    duration = st.slider("Duración de la grabación en segundos:", 1, 30, 8)
+    record(duration)
     text = transscribe()
+    st.write("Texto transcrito: ")
+    st.write(text)
     email = generate_mail(text)
-    print(email)
+    st.write("Correo electrónico generado: ")
+    st.write(email)
+    st.write("¡El correo electrónico se ha copiado en el portapapeles!")
     pyperclip.copy(email)
 
 if __name__ == "__main__":
